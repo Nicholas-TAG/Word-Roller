@@ -137,13 +137,12 @@
         const wordPool = ["Yes", "No", "Maybe"];
         
         // Match standard 6-sided architecture: Opposite sides are identical
-        // 1 & 2 (Front/Back) -> Word A | 3 & 4 (Top/Bottom) -> Word B | 5 & 6 (Right/Left) -> Word C
-        document.getElementById('f1').innerText = wordPool[0];
-        document.getElementById('f2').innerText = wordPool[0];
-        document.getElementById('f3').innerText = wordPool[1];
-        document.getElementById('f4').innerText = wordPool[1];
-        document.getElementById('f5').innerText = wordPool[2];
-        document.getElementById('f6').innerText = wordPool[2];
+        document.getElementById('f1').innerText = wordPool[0]; // Front
+        document.getElementById('f2').innerText = wordPool[0]; // Back
+        document.getElementById('f3').innerText = wordPool[1]; // Top
+        document.getElementById('f4').innerText = wordPool[1]; // Bottom
+        document.getElementById('f5').innerText = wordPool[2]; // Right
+        document.getElementById('f6').innerText = wordPool[2]; // Left
 
         // Targets for final landing rotations mapping to faces 1-6
         const faceRotations = {
@@ -162,7 +161,6 @@
         let audioCtx = null;
 
         // --- 2. Electronic Sound Generator ---
-        // Simulates a low-frequency soft thud contact bounce using Web Audio
         function playSoftSurfaceSound() {
             try {
                 if (!audioCtx) {
@@ -175,13 +173,11 @@
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 
-                osc.type = 'triangle'; // Smooth base waveform instead of harsh square/sawtooth
+                osc.type = 'triangle'; 
                 
-                // Rapid frequency dropoff mimicking structural dissipation
                 osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
                 
-                // Exponential volume dampening to make it sound like a soft impact
                 gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.14);
                 
@@ -191,7 +187,7 @@
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.15);
             } catch (e) {
-                console.log("Audio not supported or blocked by user interaction gesture.");
+                console.log("Audio not supported or blocked.");
             }
         }
 
@@ -202,10 +198,9 @@
             // True Mathematical Parity (1/6 equal distribution probability per face)
             const targetFace = Math.floor(Math.random() * 6) + 1;
             
-            const duration = 1600; // Animation running time in ms
+            const duration = 1600; 
             const startTime = performance.now();
             
-            // Generate dynamic random spin velocities for the tumble phase
             const xSpeed = 15 + Math.random() * 20;
             const ySpeed = 15 + Math.random() * 20;
             const zSpeed = 5 + Math.random() * 10;
@@ -217,13 +212,11 @@
                 const progress = elapsed / duration;
 
                 if (progress < 1) {
-                    // Continuous frantic spin animation
                     const currX = elapsed * xSpeed;
                     const currY = elapsed * ySpeed;
                     const currZ = elapsed * zSpeed;
                     dice.style.transform = `rotateX(${currX}deg) rotateY(${currY}deg) rotateZ(${currZ}deg)`;
                     
-                    // Periodic "surface strikes" sound trigger during active tumble
                     if (elapsed - lastSoundTime > 220) {
                         playSoftSurfaceSound();
                         lastSoundTime = elapsed;
@@ -231,20 +224,23 @@
                     
                     requestAnimationFrame(animateRoll);
                 } else {
-                    // Lock-in final landing sequence cleanly utilizing ease-out transition
                     dice.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
                     
                     const finalTarget = faceRotations[targetFace];
-                    // Multi-rotation offset keeps animation flow going forward into final alignment
-                    const finalX = Math.round(parseInt(dice.style.transform.match(/rotateX\(([-\d.]+)deg\)/)?.[1] || 0) / 360) * 360 + finalTarget.x;
-                    const finalY = Math.round(parseInt(dice.style.transform.match(/rotateY\(([-\d.]+)deg\)/)?.[1] || 0) / 360) * 360 + finalTarget.y;
+                    
+                    // Safe regex fallback calculation
+                    const matchX = dice.style.transform.match(/rotateX\(([-\d.]+)deg\)/);
+                    const matchY = dice.style.transform.match(/rotateY\(([-\d.]+)deg\)/);
+                    const currentXDeg = matchX ? parseFloat(matchX[1]) : 0;
+                    const currentYDeg = matchY ? parseFloat(matchY[1]) : 0;
+
+                    const finalX = Math.round(currentXDeg / 360) * 360 + finalTarget.x;
+                    const finalY = Math.round(currentYDeg / 360) * 360 + finalTarget.y;
                     
                     dice.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(0deg)`;
                     
-                    // Final impact land sound
                     setTimeout(() => {
                         playSoftSurfaceSound();
-                        // Reset structural parameters for clean sequential rolls
                         setTimeout(() => {
                             dice.style.transition = "none";
                             rollButton.disabled = false;
@@ -253,3 +249,9 @@
                 }
             }
 
+            dice.style.transition = "none";
+            requestAnimationFrame(animateRoll);
+        }
+    </script>
+</body>
+</html>
