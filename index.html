@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Word Dice Roller</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #1e1e24;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #ffffff;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 50px;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        /* 3D Scene Wrapper */
+        .scene {
+            width: 200px;
+            height: 200px;
+            perspective: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* The 3D Cube */
+        .cube {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-20deg) rotateY(35deg);
+            transition: transform 0.1s linear;
+        }
+
+        /* Individual Faces */
+        .face {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #ff4e50, #f9d423);
+            border: 4px solid #ffffff;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #1e1e24;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 0 10px rgba(0,0,0,0.1);
+            backface-visibility: visible;
+            user-select: none;
+        }
+
+        /* Precise 3D Plane Placement */
+        .front  { transform: rotateY(0deg) translateZ(75px); }
+        .back   { transform: rotateY(180deg) translateZ(75px); }
+        .top    { transform: rotateX(90deg) translateZ(75px); }
+        .bottom { transform: rotateX(-90deg) translateZ(75px); }
+        .right  { transform: rotateY(90deg) translateZ(75px); }
+        .left   { transform: rotateY(-90deg) translateZ(75px); }
+
+        /* Roll Trigger Button */
+        .roll-btn {
+            background-color: #ffffff;
+            color: #1e1e24;
+            border: none;
+            padding: 16px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .roll-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .roll-btn:disabled {
+            background-color: #555;
+            color: #aaa;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="scene">
+            <div class="cube" id="dice">
+                <!-- Opposite sides share the exact same word target -->
+                <div class="face front" id="f1"></div>
+                <div class="face back" id="f2"></div>
+                <div class="face top" id="f3"></div>
+                <div class="face bottom" id="f4"></div>
+                <div class="face right" id="f5"></div>
+                <div class="face left" id="f6"></div>
+            </div>
+        </div>
+
+        <button class="roll-btn" id="rollButton" onclick="rollDice()">Tap to Roll</button>
+    </div>
+
+    <script>
+        // --- 1. Customization Settings ---
+        // Change these 3 strings to whatever words you want featured on your dice
+        const wordPool = ["Yes", "No", "Maybe"];
+        
+        // Match standard 6-sided architecture: Opposite sides are identical
+        // 1 & 2 (Front/Back) -> Word A | 3 & 4 (Top/Bottom) -> Word B | 5 & 6 (Right/Left) -> Word C
+        document.getElementById('f1').innerText = wordPool[0];
+        document.getElementById('f2').innerText = wordPool[0];
+        document.getElementById('f3').innerText = wordPool[1];
+        document.getElementById('f4').innerText = wordPool[1];
+        document.getElementById('f5').innerText = wordPool[2];
+        document.getElementById('f6').innerText = wordPool[2];
+
+        // Targets for final landing rotations mapping to faces 1-6
+        const faceRotations = {
+            1: { x: 0,    y: 0    },   // Front
+            2: { x: 0,    y: 180  },   // Back
+            3: { x: -90,  y: 0    },   // Top
+            4: { x: 90,   y: 0    },   // Bottom
+            5: { x: 0,    y: -90  },   // Right
+            6: { x: 0,    y: 90   }    // Left
+        };
+
+        const dice = document.getElementById('dice');
+        const rollButton = document.getElementById('rollButton');
+        
+        // Web Audio Context setup for synth sound effects
+        let audioCtx = null;
+
+        // --- 2. Electronic Sound Generator ---
+        // Simulates a low-frequency soft thud contact bounce using Web Audio
+        function playSoftSurfaceSound() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.type = 'triangle'; // Smooth base waveform instead of harsh square/sawtooth
+                
+                // Rapid frequency dropoff mimicking structural dissipation
+                osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+                
+                // Exponential volume dampening to make it sound like a soft impact
+                gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.14);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.15);
+            } catch (e) {
+                console.log("Audio not supported or blocked by user interaction gesture.");
+            }
+        }
+
+        // --- 3. Roll Logic and Physics Loop ---
+        function rollDice() {
+            rollButton.disabled = true;
+            
+            // True Mathematical Parity (1/6 equal distribution probability per face)
+            const targetFace = Math.floor(Math.random() * 6) + 1;
+            
+            const duration = 1600; // Animation running time in ms
+            const startTime = performance.now();
+            
+            // Generate dynamic random spin velocities for the tumble phase
+            const xSpeed = 15 + Math.random() * 20;
+            const ySpeed = 15 + Math.random() * 20;
+            const zSpeed = 5 + Math.random() * 10;
+            
+            let lastSoundTime = 0;
+
+            function animateRoll(timestamp) {
+                const elapsed = timestamp - startTime;
+                const progress = elapsed / duration;
+
+                if (progress < 1) {
+                    // Continuous frantic spin animation
+                    const currX = elapsed * xSpeed;
+                    const currY = elapsed * ySpeed;
+                    const currZ = elapsed * zSpeed;
+                    dice.style.transform = `rotateX(${currX}deg) rotateY(${currY}deg) rotateZ(${currZ}deg)`;
+                    
+                    // Periodic "surface strikes" sound trigger during active tumble
+                    if (elapsed - lastSoundTime > 220) {
+                        playSoftSurfaceSound();
+                        lastSoundTime = elapsed;
+                    }
+                    
+                    requestAnimationFrame(animateRoll);
+                } else {
+                    // Lock-in final landing sequence cleanly utilizing ease-out transition
+                    dice.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                    
+                    const finalTarget = faceRotations[targetFace];
+                    // Multi-rotation offset keeps animation flow going forward into final alignment
+                    const finalX = Math.round(parseInt(dice.style.transform.match(/rotateX\(([-\d.]+)deg\)/)?.[1] || 0) / 360) * 360 + finalTarget.x;
+                    const finalY = Math.round(parseInt(dice.style.transform.match(/rotateY\(([-\d.]+)deg\)/)?.[1] || 0) / 360) * 360 + finalTarget.y;
+                    
+                    dice.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(0deg)`;
+                    
+                    // Final impact land sound
+                    setTimeout(() => {
+                        playSoftSurfaceSound();
+                        // Reset structural parameters for clean sequential rolls
+                        setTimeout(() => {
+                            dice.style.transition = "none";
+                            rollButton.disabled = false;
+                        }, 400);
+                    }, 150);
+                }
+            }
+
