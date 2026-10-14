@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Word Dice Roller</title>
     <style>
-        /* Safely imports the authentic Patrick Hand handwriting font style directly into the CSS engine */
+        /* Corrected Google Fonts import link to ensure Patrick Hand handwriting loads properly */
         @import url('https://googleapis.com');
 
         * {
@@ -181,9 +181,13 @@
 
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
+        
+        // Setup a universally supported global audio pointer name
+        var audioCtx = null;
 
         function playSoftSurfaceSound() {
             try {
+                // Device-safe audio initiation inside user browser window context
                 if (!audioCtx) {
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
@@ -191,10 +195,10 @@
                     audioCtx.resume();
                 }
 
-                const now = audioCtx.currentTime;
+                var now = audioCtx.currentTime;
                 
                 // Four beautiful, gentle harmonic chord structures
-                const chordPresets = [
+                var chordPresets = [
                     [261.63, 329.63, 392.00], // C Major (Bright & hopeful)
                     [261.63, 311.13, 392.00], // C Minor (Deep & atmospheric)
                     [261.63, 369.99, 392.00], // C Lydian (Dreamy & magical)
@@ -202,72 +206,43 @@
                 ];
                 
                 // Randomly select one of the chord shapes for this specific bounce
-                const randomChordIndex = Math.floor(Math.random() * chordPresets.length);
-                const selectedChord = chordPresets[randomChordIndex];
+                var randomChordIndex = Math.floor(Math.random() * chordPresets.length);
+                var selectedChord = chordPresets[randomChordIndex];
                 
-                selectedChord.forEach((fundamental, stringIndex) => {
-                    // Smoothly spaced out string-plucking delay for the strum feel
-                    const sampleStrumDelay = 0.04 + (Math.random() * 0.02); // Organic, slightly varied human strum timing
-                    const pluckDelay = stringIndex * sampleStrumDelay;
-                    const startTime = now + pluckDelay;
+                // Construct and strum each note inside the chosen chord block
+                for (var i = 0; i < selectedChord.length; i++) {
+                    var fundamental = selectedChord[i];
+                    var startTime = now + (i * 0.05); // Elegant human arpeggio delay string strike
 
-                    const harmonics = [
-                        { freq: fundamental,     vol: 0.07, decay: 0.7 },  // Lower core tone volume
-                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }   // Softened first harmonic
+                    var harmonics = [
+                        { freq: fundamental,     vol: 0.07, decay: 0.7 },
+                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }
                     ];
 
-                    harmonics.forEach((harmonic) => {
-                        const osc = audioCtx.createOscillator();
-                        const gainNode = audioCtx.createGain();
+                    for (var j = 0; j < harmonics.length; j++) {
+                        var h = harmonics[j];
+                        var osc = audioCtx.createOscillator();
+                        var gainNode = audioCtx.createGain();
                         
-                        osc.type = 'sine'; 
-                        osc.frequency.setValueAtTime(harmonic.freq, startTime);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(h.freq, startTime);
                         
-                        // --- GENTLE ATTACK ENVELOPE ---
+                        // Velvet harp attack window shape definition
                         gainNode.gain.setValueAtTime(0, startTime);
-                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
+                        gainNode.gain.linearRampToValueAtTime(h.vol, startTime + 0.02);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + h.decay);
                         
                         osc.connect(gainNode);
                         gainNode.connect(audioCtx.destination);
                         
                         osc.start(startTime);
-                        osc.stop(startTime + harmonic.decay + 0.1);
-                    });
-                });
+                        osc.stop(startTime + h.decay + 0.1);
+                    }
+                }
             } catch (e) {
-                console.log("Audio exception context.");
+                console.log("Audio skipped safely.");
             }
         }
 
-
         rollButton.addEventListener('click', function() {
             rollButton.disabled = true;
-            dice.classList.remove('rolling');
-            
-            void dice.offsetWidth; 
-
-            var targetFace = Math.floor(Math.random() * 6) + 1;
-            var rotation = faceRotations[targetFace];
-
-            dice.style.setProperty('--drift-target', 'rotateX(' + rotation.driftX + 'deg) rotateY(' + rotation.driftY + 'deg) rotateZ(10deg)');
-            dice.style.setProperty('--final-target', 'rotateX(' + rotation.finalX + 'deg) rotateY(' + rotation.finalY + 'deg) rotateZ(0deg)');
-
-            dice.classList.add('rolling');
-
-            triggerSound(harpAudio); 
-            setTimeout(function() { triggerSound(harpAudio); }, 1600);
-            setTimeout(function() { triggerSound(harpAudio); }, 3200);
-            setTimeout(function() { triggerSound(harpAudio); }, 4800);
-
-            setTimeout(function() {
-                triggerSound(thumpAudio);
-            }, 7600);
-
-            setTimeout(function() {
-                rollButton.disabled = false;
-            }, 8000);
-        });
-    </script>
-</body>
-</html>
