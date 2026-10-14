@@ -184,12 +184,12 @@
         function rollDice() {
             rollButton.disabled = true;
             const targetFace = Math.floor(Math.random() * 6) + 1;
-            const duration = 4500; 
+            const duration = 1600; 
             const startTime = performance.now();
             
-            const xSpeed = 0.3 + Math.random() * 0.5; // Significantly slowed down
-            const ySpeed = 0.3 + Math.random() * 0.5; // Significantly slowed down
-            const zSpeed = 0.3 + Math.random() * 0.2; // Significantly slowed down
+            const xSpeed = 0.1 + Math.random() * 0.1; // Significantly slowed down
+            const ySpeed = 0.1 + Math.random() * 0.1; // Significantly slowed down
+            const zSpeed = 0.1 + Math.random() * 0.1; // Significantly slowed down
             
             let lastSoundTime = 0;
 
