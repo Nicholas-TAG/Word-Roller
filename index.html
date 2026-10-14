@@ -52,7 +52,6 @@
             transition: transform 0.1s linear;
         }
 
-        /* Individual Faces - With Fixes for Centering multi-word inputs */
         .face {
             position: absolute;
             width: 150px;
@@ -131,13 +130,12 @@
     </div>
 
     <script>
-        // Setup words mapping perfectly to opposite sides
-        document.getElementById('f1').innerText = "Yes";       // Front
-        document.getElementById('f2').innerText = "Yes";       // Back
-        document.getElementById('f3').innerText = "No";        // Top
-        document.getElementById('f4').innerText = "No";        // Bottom
-        document.getElementById('f5').innerText = "No Answer"; // Right
-        document.getElementById('f6').innerText = "No Answer"; // Left
+        document.getElementById('f1').innerText = "Yes";       
+        document.getElementById('f2').innerText = "Yes";       
+        document.getElementById('f3').innerText = "No";        
+        document.getElementById('f4').innerText = "No";        
+        document.getElementById('f5').innerText = "No Answer"; 
+        document.getElementById('f6').innerText = "No Answer"; 
 
         const faceRotations = {
             1: { x: 0,    y: 0    },   
@@ -165,31 +163,33 @@
                 const gainNode = audioCtx.createGain();
                 
                 osc.type = 'triangle'; 
-                osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+                osc.frequency.setValueAtTime(110, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.2);
                 
-                gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.14);
+                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.22);
                 
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
                 
                 osc.start();
-                osc.stop(audioCtx.currentTime + 0.15);
+                osc.stop(audioCtx.currentTime + 0.25);
             } catch (e) {
-                console.log("Audio block bypass.");
+                console.log("Audio exception context.");
             }
         }
 
         function rollDice() {
             rollButton.disabled = true;
             const targetFace = Math.floor(Math.random() * 6) + 1;
+            
+            // Your custom slow settings
             const duration = 6400; 
             const startTime = performance.now();
             
-            const xSpeed = 0.01 + Math.random() * 0.01; // Significantly slowed down
-            const ySpeed = 0.01 + Math.random() * 0.01; // Significantly slowed down
-            const zSpeed = 0.01 + Math.random() * 0.01; // Significantly slowed down
+            const xSpeed = 0.01 + Math.random() * 0.01; 
+            const ySpeed = 0.01 + Math.random() * 0.01; 
+            const zSpeed = 0.01 + Math.random() * 0.01; 
             
             let lastSoundTime = 0;
 
@@ -203,33 +203,29 @@
                     const currZ = elapsed * zSpeed;
                     dice.style.transform = `rotateX(${currX}deg) rotateY(${currY}deg) rotateZ(${currZ}deg)`;
                     
-                    if (elapsed - lastSoundTime > 220) {
+                    // Spread the drift sounds out evenly across the 6.4 seconds
+                    if (elapsed - lastSoundTime > 1200) {
                         playSoftSurfaceSound();
                         lastSoundTime = elapsed;
                     }
                     
                     requestAnimationFrame(animateRoll);
                 } else {
-                    dice.style.transition = "transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+                    // Gives the final turn an ultra-smooth cinematic transition to hide the snap
+                    dice.style.transition = "transform 1.8s cubic-bezier(0.1, 0.8, 0.2, 1)";
                     const finalTarget = faceRotations[targetFace];
                     
-                    const matchX = dice.style.transform.match(/rotateX\(([-\d.]+)deg\)/);
-                    const matchY = dice.style.transform.match(/rotateY\(([-\d.]+)deg\)/);
-                    const currentXDeg = matchX ? parseFloat(matchX[1]) : 0;
-                    const currentYDeg = matchY ? parseFloat(matchY[1]) : 0;
-
-                    const finalX = Math.round(currentXDeg / 360) * 360 + finalTarget.x;
-                    const finalY = Math.round(currentYDeg / 360) * 360 + finalTarget.y;
+                    // Cleanly glide exactly to the selected word's resting angles
+                    dice.style.transform = `rotateX(${finalTarget.x}deg) rotateY(${finalTarget.y}deg) rotateZ(0deg)`;
                     
-                    dice.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(0deg)`;
-                    
+                    // Soft final impact land sound
                     setTimeout(() => {
                         playSoftSurfaceSound();
                         setTimeout(() => {
                             dice.style.transition = "none";
                             rollButton.disabled = false;
-                        }, 400);
-                    }, 150);
+                        }, 1800);
+                    }, 1400);
                 }
             }
 
