@@ -52,13 +52,13 @@
             transition: transform 0.1s linear;
         }
 
-        /* --- STABLE STONE FACE BASE STYLING --- */
+        /* --- STONE FACE BASE STYLING --- */
         .face {
             position: absolute;
             width: 150px;
             height: 150px;
             border: 5px solid #444444;
-            border-radius: 0px; /* Sharp square corners */
+            border-radius: 0px; 
             display: flex;
             flex-direction: column;    
             align-items: center;       
@@ -78,22 +78,22 @@
                 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* --- GRANITE/STONE TEXTURE COLOR SCHEMES (STRICTLY BLACK TEXT) --- */
+        /* --- STONE TEXTURES (STRICTLY BLACK TEXT) --- */
         #f1, #f2 { 
             color: #111111;
-            background-color: #539165; /* YES = Green */
+            background-color: #539165; 
             background-image: radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%), radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%), linear-gradient(125deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.08) 100%);
             background-size: 6px 6px, 9px 9px, 100% 100%;
         }
         #f3, #f4 { 
             color: #111111;
-            background-color: #be4b41; /* NO = Red */
+            background-color: #be4b41; 
             background-image: radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%), linear-gradient(125deg, rgba(0,0,0,0.12) 0%, rgba(255,255,255,0.05) 100%);
             background-size: 5px 5px, 8px 8px, 100% 100%;
         }
         #f5, #f6 { 
             color: #111111;
-            background-color: #cca22b; /* NO ANSWER = Yellow */
+            background-color: #cca22b; 
             background-image: radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%), radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%), linear-gradient(125deg, rgba(0,0,0,0.08) 0%, rgba(255,255,255,0.1) 100%);
             background-size: 7px 7px, 6px 6px, 100% 100%;
         }
@@ -163,6 +163,7 @@
         const rollButton = document.getElementById('rollButton');
         let audioCtx = null;
 
+        // Clean Audio Initialization
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -172,21 +173,21 @@
             }
         }
 
-        // --- SOUND 1: GENTLE DRIFT HARP STRUM ---
+        // GENTLE DRIFT HARP STRUM
         function playHarpSound() {
             try {
                 initAudio();
                 const now = audioCtx.currentTime;
                 const chordPresets = [
-                    [261.63, 329.63, 392.00], // C Major
-                    [261.63, 311.13, 392.00], // C Minor
-                    [261.63, 369.99, 392.00], // C Lydian
-                    [261.63, 349.23, 392.00]  // C Sus4
+                    [261.63, 329.63, 392.00], 
+                    [261.63, 311.13, 392.00], 
+                    [261.63, 369.99, 392.00], 
+                    [261.63, 349.23, 392.00]  
                 ];
                 const selectedChord = chordPresets[Math.floor(Math.random() * chordPresets.length)];
                 
                 selectedChord.forEach((fundamental, stringIndex) => {
-                    const sampleStrumDelay = 0.04 + (Math.random() * 0.02);
+                    const sampleStrumDelay = 0.05;
                     const startTime = now + (stringIndex * sampleStrumDelay);
 
                     const harmonics = [
@@ -210,17 +211,17 @@
                         osc.stop(startTime + harmonic.decay + 0.1);
                     });
                 });
-            } catch (e) { console.log("Audio exception"); }
+            } catch (e) { console.log(e); }
         }
 
-        // --- SOUND 2: ORIGINAL LANDING SURFACE THUMP ---
+        // ORIGINAL LANDING SURFACE THUMP
         function playLandingThump() {
             try {
                 initAudio();
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 
-                osc.type = 'triangle'; // Low smooth thud wave
+                osc.type = 'triangle'; 
                 osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
                 osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.15);
                 
@@ -232,14 +233,14 @@
                 
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.2);
-            } catch (e) { console.log("Audio exception"); }
+            } catch (e) { console.log(e); }
         }
 
         function rollDice() {
             rollButton.disabled = true;
             const targetFace = Math.floor(Math.random() * 6) + 1;
             
-            const duration = 6400; // Your custom 6.4-second slow drift
+            const duration = 6400; 
             const startTime = performance.now();
             
             const xSpeed = 0.01 + Math.random() * 0.01; 
@@ -249,3 +250,9 @@
             let lastSoundTime = 0;
 
             function animateRoll(timestamp) {
+                const elapsed = timestamp - startTime;
+                const progress = elapsed / duration;
+
+                if (progress < 1) {
+                    const currX = elapsed * xSpeed;
+                    const currY = elapsed * ySpeed;
