@@ -206,36 +206,33 @@
 
                 const now = audioCtx.currentTime;
                 
-                // Arpeggiated harp notes (C4, E4, G4, C5) for a flowing, elegant string pluck
-                const baseNotes = [261.63, 329.63, 392.00, 523.25];
+                // Mellow, lower-register arpeggiated harp notes (C4, E4, G4) for a calmer mood
+                const baseNotes = [261.63, 329.63, 392.00];
                 
                 baseNotes.forEach((fundamental, stringIndex) => {
-                    // Slight string-plucking delay (strum effect)
-                    const pluckDelay = stringIndex * 0.04;
+                    // Smoothly spaced out string-plucking delay
+                    const pluckDelay = stringIndex * 0.05;
                     const startTime = now + pluckDelay;
 
-                    // Generate the fundamental string tone and its natural overtones (harmonics)
-                    // This creates the warm, hollow wooden resonance of a real harp soundboard
+                    // Reduced volumes and removed the high 3rd overtone for a warmer, rounded sound
                     const harmonics = [
-                        { freq: fundamental,     vol: 0.18, decay: 0.8 },  // Core string tone
-                        { freq: fundamental * 2, vol: 0.08, decay: 0.5 },  // 1st Harmonic (bright)
-                        { freq: fundamental * 3, vol: 0.04, decay: 0.3 }   // 2nd Harmonic (crisp shimmer)
+                        { freq: fundamental,     vol: 0.08, decay: 0.7 },  // Lower core tone volume
+                        { freq: fundamental * 2, vol: 0.03, decay: 0.4 }   // Softened first harmonic
                     ];
 
                     harmonics.forEach((harmonic) => {
                         const osc = audioCtx.createOscillator();
                         const gainNode = audioCtx.createGain();
                         
-                        // Sine waves mimic the pure, smooth resonance of nylon/gut strings
                         osc.type = 'sine'; 
                         osc.frequency.setValueAtTime(harmonic.freq, startTime);
                         
-                        // --- HARP STRING ENVELOPE ---
-                        // 1. Instant pluck (zero volume to peak volume immediately)
+                        // --- GENTLE HARP ENVELOPE ---
+                        // 1. Soft-Attack: Takes 0.02 seconds to rise instead of an instant harsh snap
                         gainNode.gain.setValueAtTime(0, startTime);
-                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.01);
+                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
                         
-                        // 2. Natural string ring and dampening fade out
+                        // 2. Mellow, velvety decay fade out
                         gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
                         
                         osc.connect(gainNode);
@@ -249,6 +246,7 @@
                 console.log("Audio exception context.");
             }
         }
+
         function rollDice() {
             rollButton.disabled = true;
             const targetFace = Math.floor(Math.random() * 6) + 1;
