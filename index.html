@@ -43,12 +43,26 @@
             justify-content: center;
         }
 
+        /* The 3D Cube Core */
         .cube {
             width: 150px;
             height: 150px;
             position: relative;
             transform-style: preserve-3d;
             transform: rotateX(-20deg) rotateY(35deg);
+        }
+
+        /* --- HARDWARE ACCELERATED DRIFT AND LAND TIMING --- */
+        .cube.rolling {
+            animation: majesticRoll 8.0s cubic-bezier(0.2, 0.4, 0.1, 1) forwards;
+        }
+
+        @keyframes majesticRoll {
+            0% { transform: rotateX(-20deg) rotateY(35deg) rotateZ(0deg); }
+            /* 80% marks the end of your 6.4-second slow drift phrase */
+            80% { transform: var(--drift-target); }
+            /* Final 1.6 seconds smooth landing glide sequence */
+            100% { transform: var(--final-target); }
         }
 
         /* --- STONE FACE BASE STYLING --- */
@@ -77,7 +91,7 @@
                 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* --- STONE TEXTURES WITH PERMANENT BLACK TEXT --- */
+        /* --- COMPATIBLE STONE TEXTURES --- */
         .front, .back { 
             color: #111111 !important;
             background-color: #539165; /* YES = Green */
@@ -143,100 +157,43 @@
 
     <script>
         var faceRotations = {
-            1: { x: 360,   y: 360  },   // Front
-            2: { x: 360,   y: 540  },   // Back
-            3: { x: 270,   y: 360  },   // Top
-            4: { x: 450,   y: 360  },   // Bottom
-            5: { x: 360,   y: 270  },   // Right
-            6: { x: 360,   y: 450  }    // Left
+            1: { driftX: 330, driftY: 400, finalX: 360, finalY: 360 }, // Front (Yes)
+            2: { driftX: 330, driftY: 580, finalX: 360, finalY: 540 }, // Back (Yes)
+            3: { driftX: 240, driftY: 400, finalX: 270, finalY: 360 }, // Top (No)
+            4: { driftX: 420, driftY: 400, finalX: 450, finalY: 360 }, // Bottom (No)
+            5: { driftX: 330, driftY: 310, finalX: 360, finalY: 270 }, // Right (No Answer)
+            6: { driftX: 330, driftY: 490, finalX: 360, finalY: 450 }  // Left (No Answer)
         };
 
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
-        var audioCtx = null;
 
-        // Strictly safe audio setup linked completely to the direct physical touch click event
-        function tryPlaySound(isFinal) {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                
-                var now = audioCtx.currentTime;
-
-                if (isFinal) {
-                    // Solid grounding thump sound
-                    var osc = audioCtx.createOscillator();
-                    var gainNode = audioCtx.createGain();
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(130, now);
-                    osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
-                    gainNode.gain.setValueAtTime(0.6, now);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    osc.start(now);
-                    osc.stop(now + 0.2);
-                } else {
-                    // Mellow harp chord sweep
-                    var notes = [261.63, 329.63, 392.00];
-                    var rIndex = Math.floor(Math.random() * 3);
-                    var fundamental = notes[rIndex];
-
-                    var osc1 = audioCtx.createOscillator();
-                    var gain1 = audioCtx.createGain();
-                    osc1.type = 'sine';
-                    osc1.frequency.setValueAtTime(fundamental, now);
-                    gain1.gain.setValueAtTime(0, now);
-                    gain1.gain.linearRampToValueAtTime(0.07, now + 0.02);
-                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-                    osc1.connect(gain1);
-                    gain1.connect(audioCtx.destination);
-                    osc1.start(now);
-                    osc1.stop(now + 0.7);
-                }
-            } catch (e) {
-                console.log("Audio skipped safely.");
-            }
-        }
-
-        // Clean, direct event listener that modern mobile and desktop browsers cannot block
         rollButton.addEventListener('click', function() {
+            // Lock out button interaction safely
             rollButton.disabled = true;
-            
-            // Play initial drift sound safely on immediate user touch
-            tryPlaySound(false);
 
-            // True random face selection
+            // Remove class to reset animation timeline cleanly
+            dice.classList.remove('rolling');
+            
+            // Force browser layout re-calculation step
+            void dice.offsetWidth;
+
+            // 1/6 mathematical parity distribution
             var targetFace = Math.floor(Math.random() * 6) + 1;
-            var finalTarget = faceRotations[targetFace];
+            var rotation = faceRotations[targetFace];
 
-            // 1. Trigger the majestic ultra-slow drift (runs for 6.4 seconds using a native transition)
-            dice.style.transition = "transform 6.4s cubic-bezier(0.2, 0.3, 0.2, 1)";
-            
-            // Twist slightly off-axis to simulate an elegant drift through space
-            var driftX = finalTarget.x - 30;
-            var driftY = finalTarget.y + 40;
-            dice.style.transform = "rotateX(" + driftX + "deg) rotateY(" + driftY + "deg) rotateZ(10deg)";
+            // Safely hand the drift and land coordinate pairs straight to the CSS engine
+            dice.style.setProperty('--drift-target', 'rotateX(' + rotation.driftX + 'deg) rotateY(' + rotation.driftY + 'deg) rotateZ(10deg)');
+            dice.style.setProperty('--final-target', 'rotateX(' + rotation.finalX + 'deg) rotateY(' + rotation.finalY + 'deg) rotateZ(0deg)');
 
-            // 2. Play intermediate gentle mid-roll harp notes along the way
-            setTimeout(function() { tryPlaySound(false); }, 1500);
-            setTimeout(function() { tryPlaySound(false); }, 3000);
-            setTimeout(function() { tryPlaySound(false); }, 4500);
+            // Fire the hardware-stabilised CSS roll sequence
+            dice.classList.add('rolling');
 
-            // 3. Smoothly snap and glide perfectly into alignment for the landing
+            // Perfectly timed release window matching the 8.0s total duration
             setTimeout(function() {
-                dice.style.transition = "transform 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.15)";
-                dice.style.transform = "rotateX(" + finalTarget.x + "deg) rotateY(" + finalTarget.y + "deg) rotateZ(0deg)";
-                
-                // 4. Grounding final thump sound right at touchdown
-                setTimeout(function() {
-                    tryPlaySound(true);
-                    
-                    // Reset positions cleanly so subsequent rolls work perfectly
-                    setTimeout(function() {
-                        dice.style.transition = "none";
-                        // Re-orient parameters back to standard values below 360 safely
+                rollButton.disabled = false;
+            }, 8000);
+        });
+    </script>
+</body>
+</html>
