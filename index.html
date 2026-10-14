@@ -202,26 +202,36 @@
                     audioCtx.resume();
                 }
 
-                const osc = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
+                const now = audioCtx.currentTime;
                 
-                osc.type = 'triangle'; 
-                osc.frequency.setValueAtTime(110, audioCtx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.2);
+                // Base harmonic frequencies for a magical crystal chime chord
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
                 
-                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.22);
-                
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.25);
+                notes.forEach((freq, index) => {
+                    const osc = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    // Sine waves create a pure, clean bell-like crystalline tone
+                    osc.type = 'sine'; 
+                    osc.frequency.setValueAtTime(freq, now);
+                    
+                    // Subtle pitch vibrato to add an organic, shimmering magic texture
+                    osc.frequency.exponentialRampToValueAtTime(freq * 1.02, now + 0.4);
+                    
+                    // Elegant musical chime volume envelope
+                    gainNode.gain.setValueAtTime(0.12, now); // Soft volume per note to avoid distortion
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.45 + (index * 0.05));
+                    
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    osc.start(now);
+                    osc.stop(now + 0.6);
+                });
             } catch (e) {
                 console.log("Audio exception context.");
             }
         }
-
         function rollDice() {
             rollButton.disabled = true;
             const targetFace = Math.floor(Math.random() * 6) + 1;
