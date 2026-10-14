@@ -89,24 +89,39 @@
                 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* --- COMPATIBLE STONE TEXTURES --- */
+        /* --- STONE FACE RADIAL GRADIENTS (STRICTLY BLACK TEXT) --- */
+        
+        /* YES = Jade/Green Granite with localized hotspot */
         .front, .back { 
             color: #111111 !important;
-            background-color: #539165; /* YES = Green */
-            background-image: radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%), radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%), linear-gradient(125deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.08) 100%);
-            background-size: 6px 6px, 9px 9px, 100% 100%;
+            background: 
+                radial-gradient(circle, #7cc48f 0%, #539165 60%, #326040 100%),
+                radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%), 
+                radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%);
+            background-size: 100% 100%, 6px 6px, 9px 9px;
+            background-blend-mode: normal, multiply, normal;
         }
+        
+        /* NO = Terracotta/Red Sandstone with localized hotspot */
         .top, .bottom { 
             color: #111111 !important;
-            background-color: #be4b41; /* NO = Red */
-            background-image: radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%), linear-gradient(125deg, rgba(0,0,0,0.12) 0%, rgba(255,255,255,0.05) 100%);
-            background-size: 5px 5px, 8px 8px, 100% 100%;
+            background: 
+                radial-gradient(circle, #e66b5f 0%, #be4b41 60%, #802820 100%),
+                radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%), 
+                radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%);
+            background-size: 100% 100%, 5px 5px, 8px 8px;
+            background-blend-mode: normal, multiply, normal;
         }
+        
+        /* NO ANSWER = Ochre/Yellow Limestone with localized hotspot */
         .right, .left { 
             color: #111111 !important;
-            background-color: #cca22b; /* NO ANSWER = Yellow */
-            background-image: radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%), radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%), linear-gradient(125deg, rgba(0,0,0,0.08) 0%, rgba(255,255,255,0.1) 100%);
-            background-size: 7px 7px, 6px 6px, 100% 100%;
+            background: 
+                radial-gradient(circle, #ecd066 0%, #cca22b 60%, #866610 100%),
+                radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%), 
+                radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%);
+            background-size: 100% 100%, 7px 7px, 6px 6px;
+            background-blend-mode: normal, multiply, normal;
         }
 
         .front  { transform: rotateY(0deg) translateZ(75px); }
