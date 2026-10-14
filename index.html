@@ -182,18 +182,64 @@
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
 
-        // Embedded audio bypass tags
-        var harpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
-        var thumpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
-        harpAudio.volume = 0.4;
-        thumpAudio.volume = 0.6;
-
-        function triggerSound(audioObj) {
+        function playSoftSurfaceSound() {
             try {
-                audioObj.currentTime = 0;
-                audioObj.play();
-            } catch (e) { console.log("Audio native catch"); }
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                
+                // Four beautiful, gentle harmonic chord structures
+                const chordPresets = [
+                    [261.63, 329.63, 392.00], // C Major (Bright & hopeful)
+                    [261.63, 311.13, 392.00], // C Minor (Deep & atmospheric)
+                    [261.63, 369.99, 392.00], // C Lydian (Dreamy & magical)
+                    [261.63, 349.23, 392.00]  // C Sus4 (Open & lingering)
+                ];
+                
+                // Randomly select one of the chord shapes for this specific bounce
+                const randomChordIndex = Math.floor(Math.random() * chordPresets.length);
+                const selectedChord = chordPresets[randomChordIndex];
+                
+                selectedChord.forEach((fundamental, stringIndex) => {
+                    // Smoothly spaced out string-plucking delay for the strum feel
+                    const sampleStrumDelay = 0.04 + (Math.random() * 0.02); // Organic, slightly varied human strum timing
+                    const pluckDelay = stringIndex * sampleStrumDelay;
+                    const startTime = now + pluckDelay;
+
+                    const harmonics = [
+                        { freq: fundamental,     vol: 0.07, decay: 0.7 },  // Lower core tone volume
+                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }   // Softened first harmonic
+                    ];
+
+                    harmonics.forEach((harmonic) => {
+                        const osc = audioCtx.createOscillator();
+                        const gainNode = audioCtx.createGain();
+                        
+                        osc.type = 'sine'; 
+                        osc.frequency.setValueAtTime(harmonic.freq, startTime);
+                        
+                        // --- GENTLE ATTACK ENVELOPE ---
+                        gainNode.gain.setValueAtTime(0, startTime);
+                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
+                        
+                        osc.connect(gainNode);
+                        gainNode.connect(audioCtx.destination);
+                        
+                        osc.start(startTime);
+                        osc.stop(startTime + harmonic.decay + 0.1);
+                    });
+                });
+            } catch (e) {
+                console.log("Audio exception context.");
+            }
         }
+
 
         rollButton.addEventListener('click', function() {
             rollButton.disabled = true;
