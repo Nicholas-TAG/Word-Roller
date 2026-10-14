@@ -13,7 +13,6 @@
         }
 
         body {
-            /* Custom radial layout: brightest blue in the center fading to deep sky blue at the edges */
             background: radial-gradient(circle, #b8d8f8 0%, #4a90e2 70%, #2f69b2 100%);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex;
@@ -24,7 +23,6 @@
             overflow: hidden;
             color: #ffffff;
         }
-
 
         .container {
             display: flex;
@@ -59,11 +57,8 @@
             position: absolute;
             width: 150px;
             height: 150px;
-            
-            /* Realistic textured stone border frame */
             border: 5px solid #444444;
-            border-radius: 0px;
-            
+            border-radius: 0px; /* Sharp square corners */
             display: flex;
             flex-direction: column;    
             align-items: center;       
@@ -71,56 +66,38 @@
             text-align: center;        
             padding: 12px;             
             font-size: 20px;           
-            font-weight: 800; /* Heavy font weight for a carved-in look */
+            font-weight: 800; 
             text-transform: uppercase;
             letter-spacing: 1.5px;
             backface-visibility: visible;
             user-select: none;
             word-spacing: 100vw;       
-            
-            /* Simulates physical depth and rocky density */
             box-shadow: 
                 inset 0 0 25px rgba(0, 0, 0, 0.4),
                 inset 0 4px 8px rgba(255, 255, 255, 0.25),
                 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* --- COMPATIBLE GRANITE/STONE TEXTURE COLOR SCHEMES --- */
-        
-        /* YES = Jade/Green Granite Texture */
+        /* --- GRANITE/STONE TEXTURE COLOR SCHEMES (STRICTLY BLACK TEXT) --- */
         #f1, #f2 { 
             color: #111111;
-            background-color: #539165;
-            background-image: 
-                radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%),
-                radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%),
-                linear-gradient(125deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.08) 100%);
+            background-color: #539165; /* YES = Green */
+            background-image: radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%), radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%), linear-gradient(125deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.08) 100%);
             background-size: 6px 6px, 9px 9px, 100% 100%;
         }
-        
-        /* NO = Terracotta/Red Sandstone Texture */
         #f3, #f4 { 
             color: #111111;
-            background-color: #be4b41;
-            background-image: 
-                radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%),
-                radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%),
-                linear-gradient(125deg, rgba(0,0,0,0.12) 0%, rgba(255,255,255,0.05) 100%);
+            background-color: #be4b41; /* NO = Red */
+            background-image: radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%), linear-gradient(125deg, rgba(0,0,0,0.12) 0%, rgba(255,255,255,0.05) 100%);
             background-size: 5px 5px, 8px 8px, 100% 100%;
         }
-        
-        /* NO ANSWER = Ochre/Yellow Limestone Texture */
         #f5, #f6 { 
             color: #111111;
-            background-color: #cca22b;
-            background-image: 
-                radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%),
-                radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%),
-                linear-gradient(125deg, rgba(0,0,0,0.08) 0%, rgba(255,255,255,0.1) 100%);
+            background-color: #cca22b; /* NO ANSWER = Yellow */
+            background-image: radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%), radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%), linear-gradient(125deg, rgba(0,0,0,0.08) 0%, rgba(255,255,255,0.1) 100%);
             background-size: 7px 7px, 6px 6px, 100% 100%;
         }
 
-        /* 3D Structural Layout Positioning */
         .front  { transform: rotateY(0deg) translateZ(75px); }
         .back   { transform: rotateY(180deg) translateZ(75px); }
         .top    { transform: rotateX(90deg) translateZ(75px); }
@@ -144,17 +121,8 @@
             letter-spacing: 1px;
         }
 
-        .roll-btn:active {
-            transform: scale(0.96);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .roll-btn:disabled {
-            background-color: #f0f0f0;
-            color: #b5b5b5;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .roll-btn:active { transform: scale(0.96); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .roll-btn:disabled { background-color: #f0f0f0; color: #b5b5b5; cursor: not-allowed; transform: none; }
     </style>
 </head>
 <body>
@@ -195,69 +163,83 @@
         const rollButton = document.getElementById('rollButton');
         let audioCtx = null;
 
-        function playSoftSurfaceSound() {
-            try {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
 
+        // --- SOUND 1: GENTLE DRIFT HARP STRUM ---
+        function playHarpSound() {
+            try {
+                initAudio();
                 const now = audioCtx.currentTime;
-                
-                // Four beautiful, gentle harmonic chord structures
                 const chordPresets = [
-                    [261.63, 329.63, 392.00], // C Major (Bright & hopeful)
-                    [261.63, 311.13, 392.00], // C Minor (Deep & atmospheric)
-                    [261.63, 369.99, 392.00], // C Lydian (Dreamy & magical)
-                    [261.63, 349.23, 392.00]  // C Sus4 (Open & lingering)
+                    [261.63, 329.63, 392.00], // C Major
+                    [261.63, 311.13, 392.00], // C Minor
+                    [261.63, 369.99, 392.00], // C Lydian
+                    [261.63, 349.23, 392.00]  // C Sus4
                 ];
-                
-                // Randomly select one of the chord shapes for this specific bounce
-                const randomChordIndex = Math.floor(Math.random() * chordPresets.length);
-                const selectedChord = chordPresets[randomChordIndex];
+                const selectedChord = chordPresets[Math.floor(Math.random() * chordPresets.length)];
                 
                 selectedChord.forEach((fundamental, stringIndex) => {
-                    // Smoothly spaced out string-plucking delay for the strum feel
-                    const sampleStrumDelay = 0.04 + (Math.random() * 0.02); // Organic, slightly varied human strum timing
-                    const pluckDelay = stringIndex * sampleStrumDelay;
-                    const startTime = now + pluckDelay;
+                    const sampleStrumDelay = 0.04 + (Math.random() * 0.02);
+                    const startTime = now + (stringIndex * sampleStrumDelay);
 
                     const harmonics = [
-                        { freq: fundamental,     vol: 0.07, decay: 0.7 },  // Lower core tone volume
-                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }   // Softened first harmonic
+                        { freq: fundamental,     vol: 0.07, decay: 0.7 },
+                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }
                     ];
 
                     harmonics.forEach((harmonic) => {
                         const osc = audioCtx.createOscillator();
                         const gainNode = audioCtx.createGain();
-                        
                         osc.type = 'sine'; 
                         osc.frequency.setValueAtTime(harmonic.freq, startTime);
                         
-                        // --- GENTLE ATTACK ENVELOPE ---
                         gainNode.gain.setValueAtTime(0, startTime);
                         gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
                         gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
                         
                         osc.connect(gainNode);
                         gainNode.connect(audioCtx.destination);
-                        
                         osc.start(startTime);
                         osc.stop(startTime + harmonic.decay + 0.1);
                     });
                 });
-            } catch (e) {
-                console.log("Audio exception context.");
-            }
+            } catch (e) { console.log("Audio exception"); }
+        }
+
+        // --- SOUND 2: ORIGINAL LANDING SURFACE THUMP ---
+        function playLandingThump() {
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                osc.type = 'triangle'; // Low smooth thud wave
+                osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
+                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.15);
+                
+                gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+                
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } catch (e) { console.log("Audio exception"); }
         }
 
         function rollDice() {
             rollButton.disabled = true;
             const targetFace = Math.floor(Math.random() * 6) + 1;
             
-            const duration = 6400; 
+            const duration = 6400; // Your custom 6.4-second slow drift
             const startTime = performance.now();
             
             const xSpeed = 0.01 + Math.random() * 0.01; 
@@ -267,40 +249,3 @@
             let lastSoundTime = 0;
 
             function animateRoll(timestamp) {
-                const elapsed = timestamp - startTime;
-                const progress = elapsed / duration;
-
-                if (progress < 1) {
-                    const currX = elapsed * xSpeed;
-                    const currY = elapsed * ySpeed;
-                    const currZ = elapsed * zSpeed;
-                    dice.style.transform = `rotateX(${currX}deg) rotateY(${currY}deg) rotateZ(${currZ}deg)`;
-                    
-                    if (elapsed - lastSoundTime > 1200) {
-                        playSoftSurfaceSound();
-                        lastSoundTime = elapsed;
-                    }
-                    
-                    requestAnimationFrame(animateRoll);
-                } else {
-                    dice.style.transition = "transform 1.8s cubic-bezier(0.1, 0.8, 0.2, 1)";
-                    const finalTarget = faceRotations[targetFace];
-                    
-                    dice.style.transform = `rotateX(${finalTarget.x}deg) rotateY(${finalTarget.y}deg) rotateZ(0deg)`;
-                    
-                    setTimeout(() => {
-                        playSoftSurfaceSound();
-                        setTimeout(() => {
-                            dice.style.transition = "none";
-                            rollButton.disabled = false;
-                        }, 1800);
-                    }, 1400);
-                }
-            }
-
-            dice.style.transition = "none";
-            requestAnimationFrame(animateRoll);
-        }
-    </script>
-</body>
-</html>
