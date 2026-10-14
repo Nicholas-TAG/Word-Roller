@@ -49,7 +49,16 @@
             position: relative;
             transform-style: preserve-3d;
             transform: rotateX(-20deg) rotateY(35deg);
-            transition: transform 0.1s linear;
+        }
+
+        /* Native CSS Slow Drift Animation - Fully Stable across all devices */
+        .drifting {
+            animation: slowDrift 6.4s linear infinite;
+        }
+
+        @keyframes slowDrift {
+            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateX(45deg) rotateY(40deg) rotateZ(15deg); }
         }
 
         /* --- STONE FACE BASE STYLING --- */
@@ -58,7 +67,7 @@
             width: 150px;
             height: 150px;
             border: 5px solid #444444;
-            border-radius: 0px; /* Square corners */
+            border-radius: 0px; 
             display: flex;
             flex-direction: column;    
             align-items: center;       
@@ -130,7 +139,6 @@
     <div class="container">
         <div class="scene">
             <div class="cube" id="dice">
-                <!-- Hardcoded text elements bypass JavaScript initialization blocks entirely -->
                 <div class="face front">Yes</div>
                 <div class="face back">Yes</div>
                 <div class="face top">No</div>
@@ -156,6 +164,7 @@
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
         var audioCtx = null;
+        var soundInterval = null;
 
         function initAudio() {
             if (!audioCtx) {
@@ -231,25 +240,22 @@
 
         function rollDice() {
             rollButton.disabled = true;
-            var targetFace = Math.floor(Math.random() * 6) + 1;
+            initAudio();
             
-            var duration = 6400; 
-            var startTime = performance.now();
+            // Clean up any old transitions or animations
+            dice.style.transition = "none";
             
-            var xSpeed = 0.01 + Math.random() * 0.01; 
-            var ySpeed = 0.01 + Math.random() * 0.01; 
-            var zSpeed = 0.01 + Math.random() * 0.01; 
+            // Trigger the initial drift sound immediately
+            playHarpSound();
             
-            var lastSoundTime = 0;
-
-            function animateRoll(timestamp) {
-                var elapsed = timestamp - startTime;
-                var progress = elapsed / duration;
-
-                if (progress < 1) {
-                    var currX = elapsed * xSpeed;
-                    var currY = elapsed * ySpeed;
-                    var currZ = elapsed * zSpeed;
-                    dice.style.transform = "rotateX(" + currX + "deg) rotateY(" + currY + "deg) rotateZ(" + currZ + "deg)";
-                    
-                    if (elapsed - lastSoundTime > 1200) {
+            // Start the CSS slow-drift animation
+            dice.classList.add('drifting');
+            
+            // Play gentle harp chords every 1.2 seconds while drifting
+            soundInterval = setInterval(function() {
+                playHarpSound();
+            }, 1200);
+            
+            // After exactly 6.4 seconds of drifting, stop and glide cleanly to the winning face
+            setTimeout(function() {
+                clearInterval(soundInterval);
