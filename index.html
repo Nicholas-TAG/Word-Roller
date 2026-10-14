@@ -181,69 +181,47 @@
 
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
-        
-        // Premium, device-safe Web Audio API Setup
-        let audioContext = null;
 
-        async function initialiseAudio() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioContext.state !== 'running') {
-                await audioContext.resume();
-            }
+        // Embedded audio bypass tags
+        var harpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
+        var thumpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
+        harpAudio.volume = 0.4;
+        thumpAudio.volume = 0.6;
+
+        function triggerSound(audioObj) {
+            try {
+                audioObj.currentTime = 0;
+                audioObj.play();
+            } catch (e) { console.log("Audio native catch"); }
         }
 
-        // --- GENTLE ATMOSPHERIC HARP CHORDS (Plays during drift phase) ---
-        function playHarpSound() {
-            try {
-                if (!audioContext || audioContext.state !== 'running') return;
-                const now = audioContext.currentTime;
+        rollButton.addEventListener('click', function() {
+            rollButton.disabled = true;
+            dice.classList.remove('rolling');
+            
+            void dice.offsetWidth; 
 
-                // Four peaceful melodic chord options
-                const chordPresets = [
-                    [261.63, 329.63, 392.00], // C Major
-                    [261.63, 311.13, 392.00], // C Minor
-                    [261.63, 369.99, 392.00], // C Lydian
-                    [261.63, 349.23, 392.00]  // C Sus4
-                ];
-                const selectedChord = chordPresets[Math.floor(Math.random() * chordPresets.length)];
-                
-                selectedChord.forEach((fundamental, stringIndex) => {
-                    const startTime = now + (stringIndex * 0.05); // Delicate cascading strum delay
+            var targetFace = Math.floor(Math.random() * 6) + 1;
+            var rotation = faceRotations[targetFace];
 
-                    const harmonics = [
-                        { freq: fundamental,     vol: 0.07, decay: 0.7 },
-                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }
-                    ];
+            dice.style.setProperty('--drift-target', 'rotateX(' + rotation.driftX + 'deg) rotateY(' + rotation.driftY + 'deg) rotateZ(10deg)');
+            dice.style.setProperty('--final-target', 'rotateX(' + rotation.finalX + 'deg) rotateY(' + rotation.finalY + 'deg) rotateZ(0deg)');
 
-                    harmonics.forEach((harmonic) => {
-                        const oscillator = audioContext.createOscillator();
-                        const gainNode = audioContext.createGain();
-                        
-                        oscillator.type = 'sine'; // Soft, rounded bell-like tone
-                        oscillator.frequency.setValueAtTime(harmonic.freq, startTime);
-                        
-                        // Volume envelope: creates a soft-attack finger pluck style
-                        gainNode.gain.setValueAtTime(0, startTime);
-                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
-                        
-                        oscillator.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        
-                        oscillator.start(startTime);
-                        oscillator.stop(startTime + harmonic.decay + 0.1);
-                    });
-                });
-            } catch (e) {
-                console.log("Audio drift exception bypassed.");
-            }
-        }
+            dice.classList.add('rolling');
 
-        // --- GROUNDING SURFACE THUMP (Plays exactly at final stop contact) ---
-        function playLandingThump() {
-            try {
-                if (!audioContext || audioContext.state !== 'running') return;
-                const now = audioContext.currentTime;
+            triggerSound(harpAudio); 
+            setTimeout(function() { triggerSound(harpAudio); }, 1600);
+            setTimeout(function() { triggerSound(harpAudio); }, 3200);
+            setTimeout(function() { triggerSound(harpAudio); }, 4800);
 
+            setTimeout(function() {
+                triggerSound(thumpAudio);
+            }, 7600);
+
+            setTimeout(function() {
+                rollButton.disabled = false;
+            }, 8000);
+        });
+    </script>
+</body>
+</html>
