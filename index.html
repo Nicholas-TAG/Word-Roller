@@ -51,16 +51,6 @@
             transform: rotateX(-20deg) rotateY(35deg);
         }
 
-        /* Native CSS Slow Drift Animation - Fully Stable across all devices */
-        .drifting {
-            animation: slowDrift 6.4s linear infinite;
-        }
-
-        @keyframes slowDrift {
-            0% { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-            100% { transform: rotateX(45deg) rotateY(40deg) rotateZ(15deg); }
-        }
-
         /* --- STONE FACE BASE STYLING --- */
         .face {
             position: absolute;
@@ -148,114 +138,105 @@
             </div>
         </div>
 
-        <button class="roll-btn" id="rollButton" onclick="rollDice()">Tap to Roll</button>
+        <button class="roll-btn" id="rollButton">Tap to Roll</button>
     </div>
 
     <script>
         var faceRotations = {
-            1: { x: 0,    y: 0    },   
-            2: { x: 0,    y: 180  },   
-            3: { x: -90,  y: 0    },   
-            4: { x: 90,   y: 0    },   
-            5: { x: 0,    y: -90  },   
-            6: { x: 0,    y: 90   }    
+            1: { x: 360,   y: 360  },   // Front
+            2: { x: 360,   y: 540  },   // Back
+            3: { x: 270,   y: 360  },   // Top
+            4: { x: 450,   y: 360  },   // Bottom
+            5: { x: 360,   y: 270  },   // Right
+            6: { x: 360,   y: 450  }    // Left
         };
 
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
         var audioCtx = null;
-        var soundInterval = null;
 
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playHarpSound() {
+        // Strictly safe audio setup linked completely to the direct physical touch click event
+        function tryPlaySound(isFinal) {
             try {
-                initAudio();
-                var now = audioCtx.currentTime;
-                var chordPresets = [
-                    [261.63, 329.63, 392.00], 
-                    [261.63, 311.13, 392.00], 
-                    [261.63, 369.99, 392.00], 
-                    [261.63, 349.23, 392.00]  
-                ];
-                var selectedChord = chordPresets[Math.floor(Math.random() * chordPresets.length)];
-                
-                for (var i = 0; i < selectedChord.length; i++) {
-                    var fundamental = selectedChord[i];
-                    var startTime = now + (i * 0.05);
-
-                    var harmonics = [
-                        { freq: fundamental,     vol: 0.07, decay: 0.7 },
-                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }
-                    ];
-
-                    for (var j = 0; j < harmonics.length; j++) {
-                        var harmonic = harmonics[j];
-                        var osc = audioCtx.createOscillator();
-                        var gainNode = audioCtx.createGain();
-                        
-                        osc.type = 'sine';
-                        osc.frequency.setValueAtTime(harmonic.freq, startTime);
-                        
-                        gainNode.gain.setValueAtTime(0, startTime);
-                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
-                        
-                        osc.connect(gainNode);
-                        gainNode.connect(audioCtx.destination);
-                        osc.start(startTime);
-                        osc.stop(startTime + harmonic.decay + 0.1);
-                    }
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
-            } catch (e) { console.log(e); }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                
+                var now = audioCtx.currentTime;
+
+                if (isFinal) {
+                    // Solid grounding thump sound
+                    var osc = audioCtx.createOscillator();
+                    var gainNode = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(130, now);
+                    osc.frequency.exponentialRampToValueAtTime(30, now + 0.15);
+                    gainNode.gain.setValueAtTime(0.6, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else {
+                    // Mellow harp chord sweep
+                    var notes = [261.63, 329.63, 392.00];
+                    var rIndex = Math.floor(Math.random() * 3);
+                    var fundamental = notes[rIndex];
+
+                    var osc1 = audioCtx.createOscillator();
+                    var gain1 = audioCtx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(fundamental, now);
+                    gain1.gain.setValueAtTime(0, now);
+                    gain1.gain.linearRampToValueAtTime(0.07, now + 0.02);
+                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    osc1.connect(gain1);
+                    gain1.connect(audioCtx.destination);
+                    osc1.start(now);
+                    osc1.stop(now + 0.7);
+                }
+            } catch (e) {
+                console.log("Audio skipped safely.");
+            }
         }
 
-        function playLandingThump() {
-            try {
-                initAudio();
-                var osc = audioCtx.createOscillator();
-                var gainNode = audioCtx.createGain();
-                
-                osc.type = 'triangle'; 
-                osc.frequency.setValueAtTime(130, audioCtx.currentTime); 
-                osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.15);
-                
-                gainNode.gain.setValueAtTime(0.6, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
-                
-                osc.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.2);
-            } catch (e) { console.log(e); }
-        }
-
-        function rollDice() {
+        // Clean, direct event listener that modern mobile and desktop browsers cannot block
+        rollButton.addEventListener('click', function() {
             rollButton.disabled = true;
-            initAudio();
             
-            // Clean up any old transitions or animations
-            dice.style.transition = "none";
+            // Play initial drift sound safely on immediate user touch
+            tryPlaySound(false);
+
+            // True random face selection
+            var targetFace = Math.floor(Math.random() * 6) + 1;
+            var finalTarget = faceRotations[targetFace];
+
+            // 1. Trigger the majestic ultra-slow drift (runs for 6.4 seconds using a native transition)
+            dice.style.transition = "transform 6.4s cubic-bezier(0.2, 0.3, 0.2, 1)";
             
-            // Trigger the initial drift sound immediately
-            playHarpSound();
-            
-            // Start the CSS slow-drift animation
-            dice.classList.add('drifting');
-            
-            // Play gentle harp chords every 1.2 seconds while drifting
-            soundInterval = setInterval(function() {
-                playHarpSound();
-            }, 1200);
-            
-            // After exactly 6.4 seconds of drifting, stop and glide cleanly to the winning face
+            // Twist slightly off-axis to simulate an elegant drift through space
+            var driftX = finalTarget.x - 30;
+            var driftY = finalTarget.y + 40;
+            dice.style.transform = "rotateX(" + driftX + "deg) rotateY(" + driftY + "deg) rotateZ(10deg)";
+
+            // 2. Play intermediate gentle mid-roll harp notes along the way
+            setTimeout(function() { tryPlaySound(false); }, 1500);
+            setTimeout(function() { tryPlaySound(false); }, 3000);
+            setTimeout(function() { tryPlaySound(false); }, 4500);
+
+            // 3. Smoothly snap and glide perfectly into alignment for the landing
             setTimeout(function() {
-                clearInterval(soundInterval);
+                dice.style.transition = "transform 1.6s cubic-bezier(0.175, 0.885, 0.32, 1.15)";
+                dice.style.transform = "rotateX(" + finalTarget.x + "deg) rotateY(" + finalTarget.y + "deg) rotateZ(0deg)";
+                
+                // 4. Grounding final thump sound right at touchdown
+                setTimeout(function() {
+                    tryPlaySound(true);
+                    
+                    // Reset positions cleanly so subsequent rolls work perfectly
+                    setTimeout(function() {
+                        dice.style.transition = "none";
+                        // Re-orient parameters back to standard values below 360 safely
