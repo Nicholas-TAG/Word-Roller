@@ -182,20 +182,72 @@
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
 
-        // Embedded audio bypass tags
-        var harpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
-        var thumpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
-        harpAudio.volume = 0.4;
-        thumpAudio.volume = 0.6;
+        
+        // Offline sound effects generated with the Web Audio API
+        let audioContext = null;
 
-        function triggerSound(audioObj) {
-            try {
-                audioObj.currentTime = 0;
-                audioObj.play();
-            } catch (e) { console.log("Audio native catch"); }
+
+        async function initialiseAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (audioContext.state !== 'running') {
+                await audioContext.resume();
+            }
         }
 
-        rollButton.addEventListener('click', function() {
+        // Soft, short rolling sound
+        function playRollSound() {
+            if (!audioContext || audioContext.state !== 'running') return;
+
+            const now = audioContext.currentTime;
+            const duration = 0.16;
+
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(650 + Math.random() * 350, now);
+            oscillator.frequency.exponentialRampToValueAtTime(180, now + duration);
+
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        }
+
+        // Low, solid thump when the die lands
+        function playLandingSound() {
+            if (!audioContext || audioContext.state !== 'running') return;
+
+            const now = audioContext.currentTime;
+
+            const oscillator = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(110, now);
+            oscillator.frequency.exponentialRampToValueAtTime(42, now + 0.22);
+
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(0.55, now + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+
+            oscillator.connect(gain);
+            gain.connect(audioContext.destination);
+
+            oscillator.start(now);
+            oscillator.stop(now + 0.26);
+        }
+
+        rollButton.addEventListener('click', async function() {
+            await initialiseAudio();
             rollButton.disabled = true;
             dice.classList.remove('rolling');
             
@@ -209,14 +261,12 @@
 
             dice.classList.add('rolling');
 
-            triggerSound(harpAudio); 
-            setTimeout(function() { triggerSound(harpAudio); }, 1600);
-            setTimeout(function() { triggerSound(harpAudio); }, 3200);
-            setTimeout(function() { triggerSound(harpAudio); }, 4800);
+                        playRollSound();
+            setTimeout(playRollSound, 1600);
+            setTimeout(playRollSound, 3200);
+            setTimeout(playRollSound, 4800);
 
-            setTimeout(function() {
-                triggerSound(thumpAudio);
-            }, 7600);
+            setTimeout(playLandingSound, 7600);
 
             setTimeout(function() {
                 rollButton.disabled = false;
