@@ -206,29 +206,44 @@
 
                 const now = audioCtx.currentTime;
                 
-                // Base harmonic frequencies for a magical crystal chime chord
-                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                // Arpeggiated harp notes (C4, E4, G4, C5) for a flowing, elegant string pluck
+                const baseNotes = [261.63, 329.63, 392.00, 523.25];
                 
-                notes.forEach((freq, index) => {
-                    const osc = audioCtx.createOscillator();
-                    const gainNode = audioCtx.createGain();
-                    
-                    // Sine waves create a pure, clean bell-like crystalline tone
-                    osc.type = 'sine'; 
-                    osc.frequency.setValueAtTime(freq, now);
-                    
-                    // Subtle pitch vibrato to add an organic, shimmering magic texture
-                    osc.frequency.exponentialRampToValueAtTime(freq * 1.02, now + 0.4);
-                    
-                    // Elegant musical chime volume envelope
-                    gainNode.gain.setValueAtTime(0.12, now); // Soft volume per note to avoid distortion
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.45 + (index * 0.05));
-                    
-                    osc.connect(gainNode);
-                    gainNode.connect(audioCtx.destination);
-                    
-                    osc.start(now);
-                    osc.stop(now + 0.6);
+                baseNotes.forEach((fundamental, stringIndex) => {
+                    // Slight string-plucking delay (strum effect)
+                    const pluckDelay = stringIndex * 0.04;
+                    const startTime = now + pluckDelay;
+
+                    // Generate the fundamental string tone and its natural overtones (harmonics)
+                    // This creates the warm, hollow wooden resonance of a real harp soundboard
+                    const harmonics = [
+                        { freq: fundamental,     vol: 0.18, decay: 0.8 },  // Core string tone
+                        { freq: fundamental * 2, vol: 0.08, decay: 0.5 },  // 1st Harmonic (bright)
+                        { freq: fundamental * 3, vol: 0.04, decay: 0.3 }   // 2nd Harmonic (crisp shimmer)
+                    ];
+
+                    harmonics.forEach((harmonic) => {
+                        const osc = audioCtx.createOscillator();
+                        const gainNode = audioCtx.createGain();
+                        
+                        // Sine waves mimic the pure, smooth resonance of nylon/gut strings
+                        osc.type = 'sine'; 
+                        osc.frequency.setValueAtTime(harmonic.freq, startTime);
+                        
+                        // --- HARP STRING ENVELOPE ---
+                        // 1. Instant pluck (zero volume to peak volume immediately)
+                        gainNode.gain.setValueAtTime(0, startTime);
+                        gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.01);
+                        
+                        // 2. Natural string ring and dampening fade out
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
+                        
+                        osc.connect(gainNode);
+                        gainNode.connect(audioCtx.destination);
+                        
+                        osc.start(startTime);
+                        osc.stop(startTime + harmonic.decay + 0.1);
+                    });
                 });
             } catch (e) {
                 console.log("Audio exception context.");
