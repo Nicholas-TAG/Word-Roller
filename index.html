@@ -52,17 +52,15 @@
             transition: transform 0.1s linear;
         }
 
-        /* --- BASE STONE FACE STYLING --- */
+        /* --- STABLE STONE FACE BASE STYLING --- */
         .face {
             position: absolute;
             width: 150px;
             height: 150px;
             
-            /* Chiseled stone border styling */
-            border: 6px dashed rgba(0, 0, 0, 0.25);
-            outline: 4px solid rgba(255, 255, 255, 0.4);
-            outline-offset: -5px;
-            border-radius: 12px; /* Slightly sharper, less plastic corners */
+            /* Realistic textured stone border frame */
+            border: 5px solid #444444;
+            border-radius: 14px;
             
             display: flex;
             flex-direction: column;    
@@ -71,47 +69,56 @@
             text-align: center;        
             padding: 12px;             
             font-size: 20px;           
-            font-weight: 800; /* Extra bold text for carved look */
+            font-weight: 800; /* Heavy font weight for a carved-in look */
             text-transform: uppercase;
             letter-spacing: 1.5px;
             backface-visibility: visible;
             user-select: none;
             word-spacing: 100vw;       
             
-            /* Deep, rocky shadowing mimicking raw stone density */
+            /* Simulates physical depth and rocky density */
             box-shadow: 
-                inset 0 0 25px rgba(0, 0, 0, 0.5), 
-                inset 0 6px 12px rgba(255, 255, 255, 0.3),
-                0 4px 15px rgba(0, 0, 0, 0.2);
-                
-            /* High-Contrast SVG Stone Vein & Grain Generator */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://w3.org id='stoneNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='4' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23fff' surfaceScale='3' result='light'%3E%3CfeDistantLight azimuth='60' elevation='50'/%3E%3C/feDiffuseLighting%3E%3CfeBlend mode='multiply' in='SourceGraphic' in2='light'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23stoneNoise)' opacity='0.45'/%3E%3C/svg%3E");
-            background-blend-mode: multiply;
+                inset 0 0 25px rgba(0, 0, 0, 0.4),
+                inset 0 4px 8px rgba(255, 255, 255, 0.25),
+                0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
-        /* --- CARVED STONE COLOR VARIATIONS (STRICTLY BLACK TEXT) --- */
-        /* YES = Jade/Green Granite */
+        /* --- COMPATIBLE GRANITE/STONE TEXTURE COLOR SCHEMES --- */
+        
+        /* YES = Jade/Green Granite Texture */
         #f1, #f2 { 
-            background-color: #5aa469; 
-            color: #111111; 
-            text-shadow: 1px 1px 1px rgba(255,255,255,0.4);
+            color: #111111;
+            background-color: #539165;
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%),
+                radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%),
+                linear-gradient(125deg, rgba(0,0,0,0.1) 0%, rgba(255,255,255,0.08) 100%);
+            background-size: 6px 6px, 9px 9px, 100% 100%;
         }
         
-        /* NO = Terracotta/Red Sandstone */
+        /* NO = Terracotta/Red Sandstone Texture */
         #f3, #f4 { 
-            background-color: #ca5145; 
-            color: #111111; 
-            text-shadow: 1px 1px 1px rgba(255,255,255,0.4);
+            color: #111111;
+            background-color: #be4b41;
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%),
+                radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%),
+                linear-gradient(125deg, rgba(0,0,0,0.12) 0%, rgba(255,255,255,0.05) 100%);
+            background-size: 5px 5px, 8px 8px, 100% 100%;
         }
         
-        /* NO ANSWER = Ochre/Yellow Limestone */
+        /* NO ANSWER = Ochre/Yellow Limestone Texture */
         #f5, #f6 { 
-            background-color: #dfb233; 
-            color: #111111; 
-            text-shadow: 1px 1px 1px rgba(255,255,255,0.3);
+            color: #111111;
+            background-color: #cca22b;
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%),
+                radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%),
+                linear-gradient(125deg, rgba(0,0,0,0.08) 0%, rgba(255,255,255,0.1) 100%);
+            background-size: 7px 7px, 6px 6px, 100% 100%;
         }
 
-        /* 3D Structural Positioning */
+        /* 3D Structural Layout Positioning */
         .front  { transform: rotateY(0deg) translateZ(75px); }
         .back   { transform: rotateY(180deg) translateZ(75px); }
         .top    { transform: rotateX(90deg) translateZ(75px); }
