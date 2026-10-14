@@ -52,57 +52,66 @@
             transition: transform 0.1s linear;
         }
 
-        /* Base Face Styles */
+        /* --- BASE STONE FACE STYLING --- */
+        .face {
             position: absolute;
             width: 150px;
             height: 150px;
-            border: 5px solid #ffffff;
-            border-radius: 20px;
+            
+            /* Chiseled stone border styling */
+            border: 6px dashed rgba(0, 0, 0, 0.25);
+            outline: 4px solid rgba(255, 255, 255, 0.4);
+            outline-offset: -5px;
+            border-radius: 12px; /* Slightly sharper, less plastic corners */
+            
             display: flex;
             flex-direction: column;    
             align-items: center;       
             justify-content: center;    
             text-align: center;        
-            padding: 10px;             
+            padding: 12px;             
             font-size: 20px;           
-            font-weight: bold;
+            font-weight: 800; /* Extra bold text for carved look */
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             backface-visibility: visible;
             user-select: none;
             word-spacing: 100vw;       
             
-            /* High-fidelity structural shading */
+            /* Deep, rocky shadowing mimicking raw stone density */
             box-shadow: 
-                inset 0 0 15px rgba(0,0,0,0.25), 
-                inset 0 4px 10px rgba(255,255,255,0.4),
-                0 0 15px rgba(0,0,0,0.08);
+                inset 0 0 25px rgba(0, 0, 0, 0.5), 
+                inset 0 6px 12px rgba(255, 255, 255, 0.3),
+                0 4px 15px rgba(0, 0, 0, 0.2);
                 
-            /* Electronically generated matte texture overlay */
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0%200%20200%20200'%20xmlns='http://w3.org");
-            background-blend-mode: overlay;       
+            /* High-Contrast SVG Stone Vein & Grain Generator */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://w3.org id='stoneNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='4' result='noise'/%3E%3CfeDiffuseLighting in='noise' lighting-color='%23fff' surfaceScale='3' result='light'%3E%3CfeDistantLight azimuth='60' elevation='50'/%3E%3C/feDiffuseLighting%3E%3CfeBlend mode='multiply' in='SourceGraphic' in2='light'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23stoneNoise)' opacity='0.45'/%3E%3C/svg%3E");
+            background-blend-mode: multiply;
         }
 
-        /* --- CUSTOM COLOR PALETTES FOR OPPOSITE FACES --- */
-        /* YES = Vibrant Green with Black Text */
+        /* --- CARVED STONE COLOR VARIATIONS (STRICTLY BLACK TEXT) --- */
+        /* YES = Jade/Green Granite */
         #f1, #f2 { 
-            background: linear-gradient(135deg, #2ecc71, #27ae60); 
-            color: #1e1e24; 
+            background-color: #5aa469; 
+            color: #111111; 
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.4);
         }
         
-        /* NO = Rich Red with Black Text */
+        /* NO = Terracotta/Red Sandstone */
         #f3, #f4 { 
-            background: linear-gradient(135deg, #e74c3c, #c0392b); 
-            color: #1e1e24; 
+            background-color: #ca5145; 
+            color: #111111; 
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.4);
         }
         
-        /* NO ANSWER = Bright Yellow with Dark Text for readability */
+        /* NO ANSWER = Ochre/Yellow Limestone */
         #f5, #f6 { 
-            background: linear-gradient(135deg, #f1c40f, #f39c12); 
-            color: #1e1e24; 
+            background-color: #dfb233; 
+            color: #111111; 
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.3);
         }
 
-        /* 3D Positioning */
+        /* 3D Structural Positioning */
         .front  { transform: rotateY(0deg) translateZ(75px); }
         .back   { transform: rotateY(180deg) translateZ(75px); }
         .top    { transform: rotateX(90deg) translateZ(75px); }
