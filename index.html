@@ -206,18 +206,27 @@
 
                 const now = audioCtx.currentTime;
                 
-                // Mellow, lower-register arpeggiated harp notes (C4, E4, G4) for a calmer mood
-                const baseNotes = [261.63, 329.63, 392.00];
+                // Four beautiful, gentle harmonic chord structures
+                const chordPresets = [
+                    [261.63, 329.63, 392.00], // C Major (Bright & hopeful)
+                    [261.63, 311.13, 392.00], // C Minor (Deep & atmospheric)
+                    [261.63, 369.99, 392.00], // C Lydian (Dreamy & magical)
+                    [261.63, 349.23, 392.00]  // C Sus4 (Open & lingering)
+                ];
                 
-                baseNotes.forEach((fundamental, stringIndex) => {
-                    // Smoothly spaced out string-plucking delay
-                    const pluckDelay = stringIndex * 0.05;
+                // Randomly select one of the chord shapes for this specific bounce
+                const randomChordIndex = Math.floor(Math.random() * chordPresets.length);
+                const selectedChord = chordPresets[randomChordIndex];
+                
+                selectedChord.forEach((fundamental, stringIndex) => {
+                    // Smoothly spaced out string-plucking delay for the strum feel
+                    const sampleStrumDelay = 0.04 + (Math.random() * 0.02); // Organic, slightly varied human strum timing
+                    const pluckDelay = stringIndex * sampleStrumDelay;
                     const startTime = now + pluckDelay;
 
-                    // Reduced volumes and removed the high 3rd overtone for a warmer, rounded sound
                     const harmonics = [
-                        { freq: fundamental,     vol: 0.08, decay: 0.7 },  // Lower core tone volume
-                        { freq: fundamental * 2, vol: 0.03, decay: 0.4 }   // Softened first harmonic
+                        { freq: fundamental,     vol: 0.07, decay: 0.7 },  // Lower core tone volume
+                        { freq: fundamental * 2, vol: 0.02, decay: 0.4 }   // Softened first harmonic
                     ];
 
                     harmonics.forEach((harmonic) => {
@@ -227,12 +236,9 @@
                         osc.type = 'sine'; 
                         osc.frequency.setValueAtTime(harmonic.freq, startTime);
                         
-                        // --- GENTLE HARP ENVELOPE ---
-                        // 1. Soft-Attack: Takes 0.02 seconds to rise instead of an instant harsh snap
+                        // --- GENTLE ATTACK ENVELOPE ---
                         gainNode.gain.setValueAtTime(0, startTime);
                         gainNode.gain.linearRampToValueAtTime(harmonic.vol, startTime + 0.02);
-                        
-                        // 2. Mellow, velvety decay fade out
                         gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + harmonic.decay);
                         
                         osc.connect(gainNode);
