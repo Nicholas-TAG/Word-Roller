@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Word Roller</title>
+    <title>3D Word Dice Roller</title>
     <style>
         /* Safely imports the authentic Patrick Hand handwriting font style directly into the CSS engine */
         @import url('https://googleapis.com');
@@ -54,11 +54,13 @@
             position: relative;
             transform-style: preserve-3d;
             transform: rotateX(-20deg) rotateY(35deg);
+            cursor: pointer; /* Visual indicator that the cube is clickable */
         }
 
         /* --- HARDWARE ACCELERATED DRIFT AND LAND TIMING --- */
         .cube.rolling {
             animation: majesticRoll 8.0s cubic-bezier(0.2, 0.4, 0.1, 1) forwards;
+            pointer-events: none; /* Prevents clicking the cube again mid-roll */
         }
 
         @keyframes majesticRoll {
@@ -73,63 +75,51 @@
             width: 150px;
             height: 150px;
             border: 5px solid #3d2612; /* Rich Dark Brown Frame */
-            border-radius: 0px; 
+            border-radius: 0px;
             display: flex;
-            flex-direction: column;    
-            align-items: center;       
-            justify-content: center;    
-            text-align: center;        
-            padding: 12px;             
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 12px;
             font-size: 28px; /* Increased slightly since Patrick Hand is a leaner handwritten font */
-            font-weight: bold; 
+            font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
             backface-visibility: visible;
             user-select: none;
-            word-spacing: 100vw;       
-            box-shadow: 
-                inset 0 0 25px rgba(0, 0, 0, 0.4),
-                inset 0 4px 8px rgba(255, 255, 255, 0.25),
-                0 6px 20px rgba(0, 0, 0, 0.15);
+            word-spacing: 100vw;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.4), inset 0 4px 8px rgba(255, 255, 255, 0.25), 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         /* --- STONE FACE RADIAL GRADIENTS (STRICTLY BLACK TEXT) --- */
-        .front, .back { 
+        .front, .back {
             color: #111111 !important;
-            background: 
-                radial-gradient(circle, #7cc48f 0%, #539165 60%, #326040 100%),
-                radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%), 
-                radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%);
+            background: radial-gradient(circle, #7cc48f 0%, #539165 60%, #326040 100%), radial-gradient(rgba(0,0,0,0.15) 12%, transparent 12%), radial-gradient(rgba(255,255,255,0.15) 10%, transparent 10%);
             background-size: 100% 100%, 6px 6px, 9px 9px;
             background-blend-mode: normal, multiply, normal;
         }
-        
-        .top, .bottom { 
+
+        .top, .bottom {
             color: #111111 !important;
-            background: 
-                radial-gradient(circle, #e66b5f 0%, #be4b41 60%, #802820 100%),
-                radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%), 
-                radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%);
+            background: radial-gradient(circle, #e66b5f 0%, #be4b41 60%, #802820 100%), radial-gradient(rgba(0,0,0,0.18) 15%, transparent 15%), radial-gradient(rgba(255,255,255,0.12) 8%, transparent 8%);
             background-size: 100% 100%, 5px 5px, 8px 8px;
             background-blend-mode: normal, multiply, normal;
         }
-        
-        .right, .left { 
+
+        .right, .left {
             color: #111111 !important;
-            background: 
-                radial-gradient(circle, #ecd066 0%, #cca22b 60%, #866610 100%),
-                radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%), 
-                radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%);
+            background: radial-gradient(circle, #ecd066 0%, #cca22b 60%, #866610 100%), radial-gradient(rgba(0,0,0,0.15) 10%, transparent 10%), radial-gradient(rgba(255,255,255,0.2) 12%, transparent 12%);
             background-size: 100% 100%, 7px 7px, 6px 6px;
             background-blend-mode: normal, multiply, normal;
         }
 
-        .front  { transform: rotateY(0deg) translateZ(75px); }
-        .back   { transform: rotateY(180deg) translateZ(75px); }
-        .top    { transform: rotateX(90deg) translateZ(75px); }
+        .front { transform: rotateY(0deg) translateZ(75px); }
+        .back { transform: rotateY(180deg) translateZ(75px); }
+        .top { transform: rotateX(90deg) translateZ(75px); }
         .bottom { transform: rotateX(-90deg) translateZ(75px); }
-        .right  { transform: rotateY(90deg) translateZ(75px); }
-        .left   { transform: rotateY(-90deg) translateZ(75px); }
+        .right { transform: rotateY(90deg) translateZ(75px); }
+        .left { transform: rotateY(-90deg) translateZ(75px); }
 
         .roll-btn {
             background-color: #ffffff;
@@ -148,12 +138,20 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
 
-        .roll-btn:active { transform: scale(0.96); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-        .roll-btn:disabled { background-color: #f0f0f0; color: #b5b5b5; cursor: not-allowed; transform: none; }
+        .roll-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .roll-btn:disabled {
+            background-color: #f0f0f0;
+            color: #b5b5b5;
+            cursor: not-allowed;
+            transform: none;
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
         <div class="scene">
             <div class="cube" id="dice">
@@ -165,7 +163,6 @@
                 <div class="face left">No Reply</div>
             </div>
         </div>
-
         <button class="roll-btn" id="rollButton">Tap to Roll</button>
     </div>
 
@@ -192,36 +189,46 @@
             try {
                 audioObj.currentTime = 0;
                 audioObj.play();
-            } catch (e) { console.log("Audio native catch"); }
+            } catch (e) {
+                console.log("Audio native catch");
+            }
         }
 
-        rollButton.addEventListener('click', function() {
+        function rollDice() {
+            // Check if already rolling to prevent overlaying execution routines
+            if (rollButton.disabled) return;
+
             rollButton.disabled = true;
             dice.classList.remove('rolling');
-            
-            void dice.offsetWidth; 
+            void dice.offsetWidth; // Force heavy repaint pipeline execution
 
             var targetFace = Math.floor(Math.random() * 6) + 1;
             var rotation = faceRotations[targetFace];
 
+            // Set final structural coordinates explicitly before starting
+            dice.style.transform = 'rotateX(' + rotation.finalX + 'deg) rotateY(' + rotation.finalY + 'deg) rotateZ(0deg)';
+            
             dice.style.setProperty('--drift-target', 'rotateX(' + rotation.driftX + 'deg) rotateY(' + rotation.driftY + 'deg) rotateZ(10deg)');
             dice.style.setProperty('--final-target', 'rotateX(' + rotation.finalX + 'deg) rotateY(' + rotation.finalY + 'deg) rotateZ(0deg)');
-
+            
             dice.classList.add('rolling');
+            triggerSound(harpAudio);
 
-            triggerSound(harpAudio); 
             setTimeout(function() { triggerSound(harpAudio); }, 1600);
             setTimeout(function() { triggerSound(harpAudio); }, 3200);
             setTimeout(function() { triggerSound(harpAudio); }, 4800);
-
-            setTimeout(function() {
-                triggerSound(thumpAudio);
-            }, 7600);
+            setTimeout(function() { triggerSound(thumpAudio); }, 7600);
 
             setTimeout(function() {
                 rollButton.disabled = false;
+                // REMOVE the rolling class to restore pointer-events (clickability) on the cube
+                dice.classList.remove('rolling'); 
             }, 8000);
-        });
+        }
+
+        // Attach action handlers to both the structural button and the interactive 3D layout canvas
+        rollButton.addEventListener('click', rollDice);
+        dice.addEventListener('click', rollDice);
     </script>
 </body>
 </html>
