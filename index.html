@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="https://googleapis.com" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Word Dice Roller</title>
     <style>
+        /* Safely imports the authentic Patrick Hand handwriting font style directly into the CSS engine */
+        @import url('https://googleapis.com');
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -15,7 +17,8 @@
 
         body {
             background: radial-gradient(circle, #b8d8f8 0%, #4a90e2 70%, #2f69b2 100%);
-            font-family: 'Patrick Hand', -apple-system, BlinkMacSystemFont, sans-serif;
+            /* Forces Patrick Hand to take absolute layout priority */
+            font-family: 'Patrick Hand', cursive, sans-serif !important;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -69,21 +72,18 @@
             position: absolute;
             width: 150px;
             height: 150px;
-            
-            /* Changed border color from dark grey (#444444) to rich dark brown (#3d2612) */
-            border: 5px solid #3d2612;
-            
-            border-radius: 0px; /* Sharp square corners */
+            border: 5px solid #3d2612; /* Rich Dark Brown Frame */
+            border-radius: 0px; 
             display: flex;
             flex-direction: column;    
             align-items: center;       
             justify-content: center;    
             text-align: center;        
             padding: 12px;             
-            font-size: 20px;           
-            font-weight: 800; 
+            font-size: 24px; /* Increased slightly since Patrick Hand is a leaner handwritten font */
+            font-weight: bold; 
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1px;
             backface-visibility: visible;
             user-select: none;
             word-spacing: 100vw;       
@@ -94,8 +94,6 @@
         }
 
         /* --- STONE FACE RADIAL GRADIENTS (STRICTLY BLACK TEXT) --- */
-        
-        /* YES = Jade/Green Granite with localized hotspot */
         .front, .back { 
             color: #111111 !important;
             background: 
@@ -106,7 +104,6 @@
             background-blend-mode: normal, multiply, normal;
         }
         
-        /* NO = Terracotta/Red Sandstone with localized hotspot */
         .top, .bottom { 
             color: #111111 !important;
             background: 
@@ -117,7 +114,6 @@
             background-blend-mode: normal, multiply, normal;
         }
         
-        /* NO ANSWER = Ochre/Yellow Limestone with localized hotspot */
         .right, .left { 
             color: #111111 !important;
             background: 
@@ -149,6 +145,7 @@
             width: 100%;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
 
         .roll-btn:active { transform: scale(0.96); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -185,31 +182,24 @@
         var dice = document.getElementById('dice');
         var rollButton = document.getElementById('rollButton');
 
-        // --- EMBEDDED SYSTEM SOUND AUDIO ELEMENTS (Bypasses security blockers completely) ---
-        // Sound 1: Soft gentle harp plink
+        // Embedded audio bypass tags
         var harpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
-        // Sound 2: Clean landing impact blip 
         var thumpAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQQAAAAAAA==");
-
-        // Standardise multi-device playback settings
         harpAudio.volume = 0.4;
         thumpAudio.volume = 0.6;
 
         function triggerSound(audioObj) {
             try {
-                // Rewind to start and play natively without initializing a code context
                 audioObj.currentTime = 0;
                 audioObj.play();
-            } catch (e) {
-                console.log("Audio native catch");
-            }
+            } catch (e) { console.log("Audio native catch"); }
         }
 
         rollButton.addEventListener('click', function() {
             rollButton.disabled = true;
             dice.classList.remove('rolling');
             
-            void dice.offsetWidth; // Refresh native rendering loop
+            void dice.offsetWidth; 
 
             var targetFace = Math.floor(Math.random() * 6) + 1;
             var rotation = faceRotations[targetFace];
@@ -219,14 +209,11 @@
 
             dice.classList.add('rolling');
 
-            // --- NATIVE SYSTEM AUDIO TIMELINES ---
-            triggerSound(harpAudio); // Immediate tap strum
-            
+            triggerSound(harpAudio); 
             setTimeout(function() { triggerSound(harpAudio); }, 1600);
             setTimeout(function() { triggerSound(harpAudio); }, 3200);
             setTimeout(function() { triggerSound(harpAudio); }, 4800);
 
-            // Grounding thump impact at touchdown point
             setTimeout(function() {
                 triggerSound(thumpAudio);
             }, 7600);
